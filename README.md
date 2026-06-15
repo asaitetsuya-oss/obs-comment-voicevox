@@ -2,14 +2,14 @@
 
 YouTube Live / Twitch のコメントを **VOICEVOX** で読み上げる OBS スクリプトです。
 
-わんコメ不要・VOICEVOX自動起動・VB-Audio対応・OBS設定画面でリアルタイムに音声調整ができます。
+コメビュ不要・VOICEVOX自動起動・VB-Audio対応・OBS設定画面でリアルタイムに音声調整ができます。
 
 ---
 
 ## 機能
 
 - YouTube Live / Twitch のコメントをリアルタイム取得して読み上げ
-- **わんコメ不依存**（YouTube は pytchat で非公式取得、Twitch は IRC over WebSocket）
+- **コメビュ不依存**（YouTube は pytchat で非公式取得、Twitch は IRC over WebSocket）
 - **VOICEVOX エンジンを OBS 起動時に自動起動・終了時に自動終了**
 - VB-Audio Virtual Cable 等、任意の音声デバイスに出力
 - OBS スクリプト設定画面からボイス・速度・ピッチ・イントネーション・息継ぎをリアルタイム調整
