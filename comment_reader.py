@@ -65,7 +65,10 @@ def start_voicevox():
     print(f"[VOICEVOX] 起動中: {exe}")
     try:
         voicevox_proc = subprocess.Popen(
-            [exe], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            [exe],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=subprocess.CREATE_NO_WINDOW,
         )
     except Exception as e:
         print(f"[VOICEVOX] 起動失敗: {e}")
