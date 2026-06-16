@@ -48,8 +48,8 @@ cfg = {
     "speed_scale":      1.0,   # 読み上げ速度      0.5〜2.0
     "pitch_scale":      0.0,   # ピッチ           -0.15〜0.15
     "intonation_scale": 1.0,   # イントネーション   0.0〜2.0
-    "pre_phoneme_len":  0.1,   # 息継ぎ（前）      0.0〜1.5
-    "post_phoneme_len": 0.1,   # 息継ぎ（後）      0.0〜1.5
+    "pre_phoneme_len":  1.0,   # 息継ぎ（前）      0.0〜1.5
+    "post_phoneme_len": 1.0,   # 息継ぎ（後）      0.0〜1.5
 
     # YouTube
     "yt_enabled":     True,
