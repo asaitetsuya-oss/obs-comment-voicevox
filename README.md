@@ -2,121 +2,95 @@
 
 YouTube Live / Twitch のコメントを **VOICEVOX** で読み上げる OBS スクリプトです。
 
-コメビュ不要・VOICEVOX自動起動・VB-Audio対応・OBS設定画面でリアルタイムに音声調整ができます。
-
----
-
 ## 機能
 
-- YouTube Live / Twitch のコメントをリアルタイム取得して読み上げ
-- **コメビュ不依存**（YouTube は pytchat で非公式取得、Twitch は IRC over WebSocket）
-- **VOICEVOX エンジンを OBS 起動時に自動起動・終了時に自動終了**
-- VB-Audio Virtual Cable 等、任意の音声デバイスに出力
-- OBS スクリプト設定画面からボイス・速度・ピッチ・イントネーション・息継ぎをリアルタイム調整
-- ユーザー名の読み上げ ON/OFF
-- 除外ユーザー設定（ボットや特定ユーザーをスキップ）
-- YouTube チャンネル URL を設定するだけで配信開始を自動検出（Video ID 手動入力不要）
+- YouTube Live・Twitch のコメントをリアルタイム取得して VOICEVOX で音声合成
+- VOICEVOX エンジンの自動起動・自動終了
+- sounddevice による任意オーディオデバイスへの出力（VB-Audio CABLE / NVIDIA Broadcast 等）
+- スピーカーをドロップダウンで選択（ずんだもん・四国めたんほか主要キャラ全スタイル収録）
+- ボリューム・速度・ピッチ・イントネーション・息継ぎをスライダーで調整
+- コメント・名前の読み上げ文字数制限
+- 読み上げ除外ユーザー・除外フレーズの設定
+- 絵文字除外・カスタムスタンプ除外・システムメッセージ読み上げのオン/オフ
+- 読み上げフォーマットのカスタマイズ（`{name}` / `{comment}` プレースホルダー対応）
+- YouTube: チャンネル URL を設定するだけで配信開始を自動検出・再接続
+- Twitch: IRC over WebSocket、OAuth トークン認証、`!` コマンドの自動除外
 
----
+## 動作要件
 
-## 必要環境
+- OBS Studio（Python スクリプト機能対応バージョン）
+- [VOICEVOX](https://voicevox.hiroshiba.jp/)（エンジン同梱の製品版）
+- Python 依存ライブラリ
 
-- Windows 10/11
-- OBS Studio（Python スクリプト対応版）
-- Python 3.10+
-- [VOICEVOX](https://voicevox.hiroshiba.jp/)
-- [VB-Audio Virtual Cable](https://vb-audio.com/Cable/)（任意）
-
----
+```
+pip install websocket-client requests sounddevice numpy
+```
 
 ## インストール
 
-**1. 依存ライブラリをインストール**
+1. [Releases](https://github.com/asaitetsuya-oss/obs-comment-voicevox/releases) から `comment_reader.py` をダウンロード
+2. OBS Studio → ツール → スクリプト → `+` ボタンで追加
+3. 設定画面で VOICEVOX エンジンの exe パスを入力
+4. YouTube チャンネル URL または Twitch チャンネル名・OAuth を入力して完了
 
-OBS が使用している Python に対して実行してください。
+## 設定項目
 
-```powershell
-pip install pytchat websocket-client requests sounddevice numpy
-```
+### 基本
 
-**2. スクリプトをダウンロード**
+| 項目 | 説明 | デフォルト |
+|------|------|-----------|
+| VOICEVOX URL | エンジンの API エンドポイント | `http://localhost:50021` |
+| VOICEVOX エンジン exe パス | エンジンの実行ファイルパス | — |
+| スピーカー | キャラクター・スタイルの選択 | ずんだもん ノーマル |
+| 音声出力デバイス名 | 部分一致で検索（例: `CABLE Input`） | `CABLE Input` |
+| ユーザー名を読み上げる | オン/オフ | オン |
 
-`comment_reader.py` を任意のフォルダに配置します（例: `D:/obs-script/`）。
+### 音声パラメータ
 
-**3. OBS に登録**
+| 項目 | 範囲 | デフォルト |
+|------|------|-----------|
+| ボリューム | 0.0 〜 2.0 | 1.0 |
+| 読み上げ速度 | 0.5 〜 2.0 | 1.0 |
+| ピッチ | -0.15 〜 0.15 | 0.0 |
+| イントネーション | 0.0 〜 2.0 | 1.0 |
+| 息継ぎ（前） | 0.0 〜 1.5 | 1.0 |
+| 息継ぎ（後） | 0.0 〜 1.5 | 1.0 |
 
-ツール → スクリプト → `+` → `comment_reader.py` を選択
+### フィルタ
 
----
+| 項目 | 説明 | デフォルト |
+|------|------|-----------|
+| コメント読み上げ文字数制限 | 超過分をカット | オン / 50文字 |
+| 名前読み上げ文字数制限 | 超過分をカット | オン / 10文字 |
+| 絵文字を除外する | Unicode 絵文字を除去 | オフ |
+| カスタムスタンプを読み上げない | YouTube スタンプ | オフ |
+| ギフト画像を読み上げない | — | オフ |
+| 絵文字/画像数制限 | 上限を超えたコメントをスキップ | オフ / 5個 |
+| システムメッセージの読み上げ | 入退室通知等 | オフ |
+| 読み上げ除外ユーザー | カンマ区切りで指定 | — |
+| 読み上げ除外フレーズ | 行区切りで指定 | — |
 
-## 設定
+### 読み上げフォーマット
 
-OBS のスクリプト設定画面で以下を入力します。
+| 項目 | 説明 | デフォルト |
+|------|------|-----------|
+| 読み上げフォーマット | `{name}` / `{comment}` が使えます | `{name}。{comment}` |
+| 通知メッセージフォーマット | `{comment}` が使えます | `{comment}` |
 
-### 基本設定
+### YouTube
 
-| 項目 | 説明 |
-|------|------|
-| VOICEVOX URL | `http://localhost:50021`（デフォルトのまま） |
-| VOICEVOX エンジン exe パス | `run.exe` のフルパス |
-| スピーカー ID | VOICEVOX のキャラクター ID（ずんだもんノーマル=3, ツンツン=7） |
-| 音声出力デバイス名 | 部分一致で検索。VB-Audio なら `CABLE Input` |
-| 読み上げ最大文字数 | 長いコメントはここで切る |
-| 除外ユーザー | カンマ区切りで指定（例: `nightbot,streamelements`） |
+チャンネル URL（例: `https://www.youtube.com/@your_channel`）を設定するだけで、配信開始を自動検出します。配信が終了または切断された場合は 30 秒後に再接続を試みます。
 
-### スピーカー ID 一覧の確認方法
+### Twitch
 
-VOICEVOX 起動中に以下を実行：
+OAuth トークンは [https://twitchapps.com/tmi/](https://twitchapps.com/tmi/) で取得してください。`!` から始まるコメントは自動的に除外されます。
 
-```powershell
-python -c "import requests; [print(s['name'], [(st['name'], st['id']) for st in s['styles']]) for s in requests.get('http://localhost:50021/speakers').json()]"
-```
+## クレジット
 
-### Twitch 設定
+音声合成に [VOICEVOX](https://voicevox.hiroshiba.jp/) を使用しています。  
+VOICEVOX の利用規約に従い、配信・動画にクレジットの記載をお願いします。
 
-| 項目 | 説明 |
-|------|------|
-| Twitch チャンネル名 | 自分のチャンネル名（例: `your_channel`） |
-| Twitch ユーザー名 | 同上 |
-| Twitch OAuth トークン | 下記で取得した `oauth:xxxxxxxxxx` 形式 |
-
-**OAuth トークン取得**
-
-1. https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=q6batx0epp608isickayubi39itsckt&redirect_uri=https://twitchapps.com/tmi/&scope=chat:read にアクセス
-2. 表示されたトークンを `oauth:` を付けて入力
-
-### YouTube 設定
-
-| 項目 | 説明 |
-|------|------|
-| YouTube チャンネル URL | `https://www.youtube.com/@your_channel` |
-
-チャンネル URL を設定するだけで、配信開始を自動検出します。Video ID の手動入力は不要です。
-
----
-
-## 音声パラメータ
-
-OBS 設定画面のスライダーで調整できます。次のコメントから即座に反映されます。
-
-| スライダー | 範囲 | デフォルト |
-|-----------|------|----------|
-| ボリューム | 0.0〜2.0 | 1.0 |
-| 読み上げ速度 | 0.5〜2.0 | 1.0 |
-| ピッチ | -0.15〜0.15 | 0.0 |
-| イントネーション | 0.0〜2.0 | 1.0 |
-| 息継ぎ（前） | 0.0〜1.5 | 0.1 |
-| 息継ぎ（後） | 0.0〜1.5 | 0.1 |
-
----
-
-## 注意事項
-
-- YouTube のコメント取得は **pytchat（非公式）** を使用しています。YouTube 側の仕様変更で動作しなくなる場合があります
-- Twitch は公式の IRC over WebSocket を使用しています
-- VOICEVOX エンジンのパスは環境に合わせて設定画面から変更してください
-
----
+例: `VOICEVOX:ずんだもん`
 
 ## ライセンス
 
